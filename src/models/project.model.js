@@ -28,12 +28,20 @@ const ticket = new Schema({
     sprint: { type: String, required: false },
     status: { type: String, required: false },
 });
+const meetingRoom = new Schema(
+    {
+        roomName: { type: String, required: true },
+        roomId: { type: String, required: true },
+    },
+    { _id: false }
+);
 const projectSchema = new Schema({
     projectName: { type: String, required: true },
     startDate: { type: Date, required: false },
     targetEndDate: { type: Date, required: false },
     members: { type: [member], required: false },
     tickets: { type: [ticket], required: false },
+    meetingRoom: { type: meetingRoom, required: true },
     sprints: { type: [Schema.Types.ObjectId], ref: "Sprints", required: false },
 });
 
