@@ -1,4 +1,3 @@
-const { default: axios } = require("axios");
 const express = require("express");
 const mongoose = require("mongoose");
 const ProjectsModel = mongoose.model("Projects");
@@ -74,7 +73,9 @@ router.get(
             const userProjects = user.projects;
             const projects = await ProjectsModel.find({
                 _id: { $in: userProjects },
-            }).exec();
+            })
+                .populate("sprints")
+                .exec();
             return res.status(200).json(projects);
         } catch (error) {
             return res
