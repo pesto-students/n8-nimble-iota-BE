@@ -278,7 +278,7 @@ router.post(
 router.post(
     "/alldevelopersOfAProject",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {
@@ -288,21 +288,27 @@ router.post(
                 } else {
                     if (result.members.length > 0) {
                         var memObjIds = result.members.map(function (obj) {
-                            return obj["userId"]
+                            return obj["userId"];
                         });
-                        UsersModel.find({
-                            _id : { $in: memObjIds },
-                        },(err,result)=>{
-                            if (!result) {
-                                res.sendStatus(404).send(`Coudln't fetch developers list of porjectId ${porjectId}`).end();
+                        UsersModel.find(
+                            {
+                                _id: { $in: memObjIds },
+                            },
+                            (err, result) => {
+                                if (!result) {
+                                    res.sendStatus(404)
+                                        .send(
+                                            `Coudln't fetch developers list of porjectId ${porjectId}`
+                                        )
+                                        .end();
+                                }
+                                res.status(200).send({
+                                    success: true,
+                                    data: result,
+                                });
                             }
-                            res.status(200).send({
-                                success: true,
-                                data: result,
-                            });
-                        })
+                        );
                     }
-                   
                 }
             } else {
                 res.status(400).send(err.message);
