@@ -7,7 +7,8 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const Redis = require("ioredis");
+// const Redis = require("ioredis");
+const Redis = require("../redis");
 const redis = new Redis();
 
 require("../passport");
