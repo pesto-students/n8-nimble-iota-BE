@@ -26,6 +26,11 @@ const sprintsSchema = new Schema({
         required: false,
     },
     activities: { type: [activitiesSchema], required: false },
+    status: {
+        type: String,
+        enum: ["closed", "active", "upcoming"],
+        default: "upcoming",
+    },
 });
 
 const SprintsModel = mongoose.model("Sprints", sprintsSchema);
