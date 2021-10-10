@@ -27,6 +27,7 @@ app.use("/api", require("./controls/project"));
 app.use("/api", require("./controls/sprint"));
 app.use("/api", require("./controls/payments"));
 app.use("/api", require("./controls/dyte"));
+app.use("/api", require("./controls/reports"));
 
 app.listen(process.env.PORT || 5000);
 

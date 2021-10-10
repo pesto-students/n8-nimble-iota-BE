@@ -7,12 +7,12 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-// const Redis = require("ioredis");
-const Redis = require("../redis");
-const redis = new Redis();
+const redis = require("../redis")
+
 
 require("../passport");
 
+const redisClient = redis();
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -118,7 +118,7 @@ router.get(
             const ObjectId = mongoose.Types.ObjectId;
             const developer = await RoleModel.findOne({ name: "developer" });
             const users = await UserModel.find({
-                role: new ObjectId(developer._id),
+                role: new ObjectId(developer._id), 
             }).exec();
             res.send(users);
         } catch (err) {
@@ -173,10 +173,10 @@ const pushRefreshToken = async (token) => {
     await setRefreshTokens(refreshTokens);
 };
 const setRefreshTokens = async (obj) => {
-    await redis.set("refreshTokens", JSON.stringify(obj));
+    await redisClient.set("refreshTokens", JSON.stringify(obj));
 };
 const getRefreshTokens = async () => {
-    const refreshTokens = await redis.get("refreshTokens");
+    const refreshTokens = await redisClient.get("refreshTokens");
     return JSON.parse(refreshTokens);
 };
 

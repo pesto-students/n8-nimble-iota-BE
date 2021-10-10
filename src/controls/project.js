@@ -272,7 +272,7 @@ router.post(
                     res.sendStatus(404).send("Project was not found.").end();
                 } else {
                     const ticketIndex = result.tickets.findIndex(
-                        (ticket) => ticket.ticketId === ticketId
+                        (ticket) => {return ticket.ticketId === ticketId}
                     );
                     if (ticketIndex !== -1) {
                         // Add Validation If srpint should not be completed
@@ -280,8 +280,8 @@ router.post(
                     } else {
                         res.sendStatus(404).send("Ticket was not found").end();
                     }
-
-                    result.save(function (saveerr, saveresult) {
+ 
+                    result.save(function (saveerr, saveresult) { 
                         if (!saveerr) {
                             res.status(200).send({
                                 success: true,
