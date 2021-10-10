@@ -163,12 +163,12 @@ router.post(
 );
 
 router.get(
-    "/sprints",
+    "/sprints/:project_id",
     passport.authenticate("jwt", { session: false }),
     async (req, res) => {
         try {
             const project = await ProjectsModel.findOne({
-                _id: req.body.project_id,
+                _id: req.params.project_id,
             }).exec();
             const projectSprints = project.sprints;
             const sprints = await SprintsModel.find({

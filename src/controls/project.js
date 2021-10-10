@@ -305,7 +305,7 @@ router.post(
 router.post(
     "/alldevelopersOfAProject",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {
