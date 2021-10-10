@@ -194,6 +194,7 @@ router.post("/login", async (req, res, next) => {
             req.login(user, { session: false }, async (error) => {
                 if (error) return next(error);
                 const body = {
+                    id: user._id,
                     name: user.name,
                     email: user.email,
                     role: user.role,

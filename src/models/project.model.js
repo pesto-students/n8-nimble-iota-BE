@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const standup = new Schema(
     {
-        date: { type: Date, required: false },
+        date: { type: String, required: false },
         yesterday: { type: String, required: false },
         today: { type: String, required: false },
         blocker: { type: String, required: false },
