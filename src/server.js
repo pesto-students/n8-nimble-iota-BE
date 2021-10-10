@@ -5,7 +5,7 @@ const session = require("express-session");
 const cors = require("cors");
 const connection = require("./models");
 const cookieParser = require("cookie-parser");
-const redis = require("./redis")
+const redis = require("./redis");
 
 connection();
 redis();
@@ -26,6 +26,7 @@ app.use("/api", require("./controls/user"));
 app.use("/api", require("./controls/project"));
 app.use("/api", require("./controls/sprint"));
 app.use("/api", require("./controls/payments"));
+app.use("/api", require("./controls/dyte"));
 
 app.listen(process.env.PORT || 5000);
 

@@ -6,6 +6,7 @@ const UsersModel = mongoose.model("Users");
 const { roles } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
+const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
 
 router.post(
     "/project",
@@ -18,12 +19,36 @@ router.post(
             }).exec();
             if (user.projects.length >= 1)
                 return res.status(200).send("A default project already exists");
+            const meeting = await sdk.createMeeting(
+                {
+                    title: "Default Room",
+                    presetName: "nimble",
+                },
+                {
+                    organizationId: process.env.DYTE_ORG_ID,
+                    Authorization: process.env.DYTE_API_KEY,
+                }
+            );
+            if (!meeting.success) {
+                return res.status(500).send({
+                    message: "Unable to create room.",
+                });
+            }
             const project = await ProjectsModel.create({
                 projectName: "Default Project",
                 startDate: Date.now(),
-                members: [],
+                members: [
+                    {
+                        userId: user._id,
+                        standups: [],
+                    },
+                ],
                 tickets: [],
                 sprints: [],
+                meetingRoom: {
+                    roomName: meeting?.data?.meeting?.roomName,
+                    roomId: meeting?.data?.meeting?.id,
+                },
             });
             user.projects.push(project._id);
             user.save();
@@ -48,7 +73,9 @@ router.get(
             const userProjects = user.projects;
             const projects = await ProjectsModel.find({
                 _id: { $in: userProjects },
-            }).exec();
+            })
+                .populate("sprints")
+                .exec();
             return res.status(200).json(projects);
         } catch (error) {
             return res
@@ -287,18 +314,18 @@ router.post(
                     res.sendStatus(404).send("Project was not found.").end();
                 } else {
                     if (result.members.length > 0) {
-                        var memObjIds = result.members.map(function (obj) {
-                            return obj["userId"];
+                        const memObjIds = result.members.map(function (obj) {
+                            return obj.userId;
                         });
                         UsersModel.find(
                             {
                                 _id: { $in: memObjIds },
                             },
-                            (err, result) => {
+                            (_err, result) => {
                                 if (!result) {
                                     res.sendStatus(404)
                                         .send(
-                                            `Coudln't fetch developers list of porjectId ${porjectId}`
+                                            `Coudln't fetch developers list of porjectId ${projectId}`
                                         )
                                         .end();
                                 }
@@ -337,7 +364,7 @@ router.post(
                         if (!saveerr) {
                             res.status(200).send({
                                 success: true,
-                                message: `Member added successfully`,
+                                message: "Member added successfully",
                             });
                         } else {
                             res.status(400).send({
