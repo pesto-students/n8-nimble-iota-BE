@@ -74,7 +74,19 @@ router.get(
                 _id: { $in: userProjects },
             })
                 .populate("sprints")
+                .lean()
                 .exec();
+            for (let i = 0; i < projects.length; i++) {
+                const val = projects[i];
+                for (let j = 0; j < val.members.length; j++) {
+                    const member = val.members[j];
+                    const user = await UsersModel.findById(
+                        member.userId,
+                        "name email active"
+                    ).exec();
+                    val.members[j] = { ...member, user };
+                }
+            }
             return res.status(200).json(projects);
         } catch (error) {
             return res
@@ -89,8 +101,8 @@ router.post(
     passport.authenticate("jwt", { session: false }),
     checkIsInRole(roles.ROLE_SCRUMMASTER),
     async (req, res) => {
-        const { memberEmail, projectId } = req.body;
-        const user = await UsersModel.findOne({ email: memberEmail }).exec();
+        const { memberId, projectId } = req.body;
+        const user = await UsersModel.findById(memberId).exec();
         const project = await ProjectsModel.findById(projectId).exec();
         if (
             Array(project.members).findIndex((e) => e.user_id === user._id) >= 0
@@ -324,17 +336,17 @@ router.post(
                 if (!result) {
                     res.sendStatus(404).send("Project was not found.").end();
                 } else {
-                    const ticketIndex = result.tickets.findIndex(
-                        (ticket) => {return ticket.ticketId === ticketId}
-                    );
+                    const ticketIndex = result.tickets.findIndex((ticket) => {
+                        return ticket.ticketId === ticketId;
+                    });
                     if (ticketIndex !== -1) {
                         // Add Validation If srpint should not be completed
                         result.tickets[ticketIndex].status = status;
                     } else {
                         res.sendStatus(404).send("Ticket was not found").end();
                     }
- 
-                    result.save(function (saveerr, saveresult) { 
+
+                    result.save(function (saveerr, saveresult) {
                         if (!saveerr) {
                             res.status(200).send({
                                 success: true,

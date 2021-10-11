@@ -7,8 +7,9 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const redis = require("../redis")
-
+const redis = require("../redis");
+const checkIsInRole = require("../utils");
+const { roles } = require("../constants");
 
 require("../passport");
 
@@ -118,7 +119,7 @@ router.get(
             const ObjectId = mongoose.Types.ObjectId;
             const developer = await RoleModel.findOne({ name: "developer" });
             const users = await UserModel.find({
-                role: new ObjectId(developer._id), 
+                role: new ObjectId(developer._id),
             }).exec();
             res.send(users);
         } catch (err) {
@@ -241,5 +242,19 @@ router.delete("/logout", async (req, res) => {
     res.clearCookie("token");
     res.sendStatus(204);
 });
+
+router.get(
+    "/search",
+    passport.authenticate("jwt", { session: false }),
+    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    async (req, res) => {
+        const searchString = req.query.q;
+        const users = await UserModel.find(
+            { name: { $regex: `^${searchString}` } },
+            "name"
+        ).exec();
+        return res.status(200).json(users);
+    }
+);
 
 module.exports = router;
