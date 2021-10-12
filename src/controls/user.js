@@ -217,6 +217,32 @@ router.post("/login", async (req, res, next) => {
     })(req, res, next);
 });
 
+router.post(
+    "/getUserData",
+    passport.authenticate("jwt", { session: false }),
+    async (req, res) => {
+        try {
+            const user = await UserModel.findOne({ _id: req.body.id },{ password : 0 });
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    message: "User not found for this",
+                });
+            }
+            res.status(200).send({
+                success: true,
+                data: user,
+            });
+        } catch (error) {
+            console.log(error)
+            res.status(500).send({
+                success: false,
+                message: "Internal Server Error",
+            });
+        }
+    }
+);
+
 router.post("/token", async (req, res) => {
     const refreshToken = req.body.token;
     if (refreshToken === null) return res.sendStatus(401);
