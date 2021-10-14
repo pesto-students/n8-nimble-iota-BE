@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const ProjectsModel = mongoose.model("Projects");
+const SprintsModel = mongoose.model("Sprints");
 const passport = require("passport");
 const UsersModel = mongoose.model("Users");
-const { roles } = require("../constants");
+const { roles, sprintStatus } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
 const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
@@ -34,6 +35,13 @@ router.post(
                     message: "Unable to create room.",
                 });
             }
+            const upcomingSprint = await SprintsModel.create({
+                name: "Sprint_1",
+                retrospectives: [],
+                activities: [],
+                status: sprintStatus.UPCOMING,
+            });
+            upcomingSprint.save();
             const project = await ProjectsModel.create({
                 projectName: "Default Project",
                 startDate: Date.now(),
@@ -44,7 +52,7 @@ router.post(
                     },
                 ],
                 tickets: [],
-                sprints: [],
+                sprints: [upcomingSprint._id],
                 meetingRoom: {
                     roomName: meeting?.data?.meeting?.roomName,
                     roomId: meeting?.data?.meeting?.id,

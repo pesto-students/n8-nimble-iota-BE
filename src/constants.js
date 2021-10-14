@@ -3,6 +3,13 @@ const roles = {
     ROLE_DEVELOPER: "developer",
 };
 
+const sprintStatus = {
+    UPCOMING: "upcoming",
+    ACTIVE: "active",
+    COMPLETED: "completed",
+};
+
 module.exports = {
     roles,
+    sprintStatus,
 };
