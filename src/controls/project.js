@@ -130,7 +130,7 @@ router.post(
                     result.markModified("members");
                     result.save(function (saveerr, saveresult) {
                         if (!saveerr) {
-                            res.status(200).send(saveresult);
+                            res.status(201).send(saveresult);
                         } else {
                             res.status(400).send(saveerr.message);
                         }
