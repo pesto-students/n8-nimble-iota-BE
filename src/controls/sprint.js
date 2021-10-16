@@ -111,6 +111,7 @@ router.put(
             sprint.save();
             return res.send({ message: "complete date updated" });
         } catch (error) {
+            console.log(error)
             return res
                 .status(500)
                 .send({ message: "server side error", error: { ...error } });
@@ -162,6 +163,10 @@ router.post(
                 });
                 project.sprints.push(upcomingSprint._id);
                 sprints.push(upcomingSprint);
+                res.status(200).send({
+                    success: true,
+                    message: "Sprint started Successfully",
+                });
             } else {
                 res.status(406).send({
                     message: "No sprint in the current project!",

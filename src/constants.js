@@ -4,9 +4,9 @@ const roles = {
 };
 
 const sprintStatus = {
-    UPCOMING: "upcoming",
-    ACTIVE: "active",
-    COMPLETED: "completed",
+    UPCOMING: "UPCOMING",
+    ACTIVE: "ACTIVE",
+    COMPLETED: "COMPLETED",
 };
 
 module.exports = {
