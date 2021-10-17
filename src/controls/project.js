@@ -78,8 +78,12 @@ router.get(
                 email: req.user.email,
             }).exec();
             const userProjects = user.projects;
+
             const projects = await ProjectsModel.find({
-                _id: { $in: userProjects },
+                $or: [
+                    { _id: { $in: userProjects } },
+                    { members: { userId: user._id } },
+                ],
             })
                 .populate("sprints")
                 .lean()
