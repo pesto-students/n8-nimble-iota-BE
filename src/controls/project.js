@@ -150,7 +150,7 @@ router.post(
 router.post(
     "/addStandup",
     passport.authenticate("jwt", { session: false }),
-    // checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId, userId, standup } = req.body;
         console.log(projectId, userId, standup);
@@ -317,7 +317,7 @@ router.post(
 router.post(
     "/getAllTickets",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {
