@@ -9,7 +9,10 @@ const sprintStatus = {
     COMPLETED: "COMPLETED",
 };
 
+const redisKey = "REDIS_REPORTS"
+
 module.exports = {
     roles,
     sprintStatus,
+    redisKey
 };
