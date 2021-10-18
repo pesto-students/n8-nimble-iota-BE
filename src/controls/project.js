@@ -153,27 +153,31 @@ router.post(
     checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId, userId, standup } = req.body;
-        console.log(projectId, userId, standup);
         ProjectsModel.findById(projectId, (err, result) => {
             if (!err) {
                 if (!result) {
-                    res.sendStatus(404).send("Project was not found").end();
+                    return res
+                        .sendStatus(404)
+                        .send("Project was not found")
+                        .end();
                 } else {
                     const index = result.members.findIndex(
                         (member) => member.userId === userId
                     );
                     if (index < 0)
-                        res.status(400)
+                        return res
+                            .status(400)
                             .send({
                                 success: false,
                                 message: "user not found under this project",
                             })
                             .end();
                     if (
-                        result.members[index].standups.slice(-1)[0].date ===
-                        standup.date
+                        result.members[index].standups.slice(-1)[0]?.date ===
+                        standup?.date
                     )
-                        res.status(400)
+                        return res
+                            .status(400)
                             .send({
                                 success: false,
                                 message: "user is already done with stand up",
