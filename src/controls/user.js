@@ -7,9 +7,13 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const redis = require("../redis");
+const checkIsInRole = require("../utils");
+const { roles } = require("../constants");
 
 require("../passport");
 
+const redisClient = redis();
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -158,7 +162,24 @@ router.post("/register", async (req, res, next) => {
     })(req, res, next);
 });
 
-let refreshTokens = [];
+const removeRefreshToken = async (destroytoken) => {
+    let refreshTokens = await getRefreshTokens();
+    refreshTokens = refreshTokens.filter((token) => token !== destroytoken);
+    await setRefreshTokens(refreshTokens);
+};
+const pushRefreshToken = async (token) => {
+    let refreshTokens = await getRefreshTokens();
+    if (!refreshTokens) refreshTokens = [];
+    refreshTokens.push(token);
+    await setRefreshTokens(refreshTokens);
+};
+const setRefreshTokens = async (obj) => {
+    await redisClient.set("refreshTokens", JSON.stringify(obj));
+};
+const getRefreshTokens = async () => {
+    const refreshTokens = await redisClient.get("refreshTokens");
+    return JSON.parse(refreshTokens);
+};
 
 router.post("/login", async (req, res, next) => {
     passport.authenticate("login", async (err, user, info) => {
@@ -174,6 +195,7 @@ router.post("/login", async (req, res, next) => {
             req.login(user, { session: false }, async (error) => {
                 if (error) return next(error);
                 const body = {
+                    id: user._id,
                     name: user.name,
                     email: user.email,
                     role: user.role,
@@ -183,7 +205,7 @@ router.post("/login", async (req, res, next) => {
                     { user: body },
                     process.env.JWT_ACC_ACTIVATE
                 );
-                refreshTokens.push(refreshToken);
+                await pushRefreshToken(refreshToken);
                 res.cookie("token", token, { httpOnly: true }).json({
                     ...body,
                     token: refreshToken,
@@ -195,9 +217,39 @@ router.post("/login", async (req, res, next) => {
     })(req, res, next);
 });
 
-router.post("/token", (req, res) => {
+router.post(
+    "/getUserData",
+    passport.authenticate("jwt", { session: false }),
+    async (req, res) => {
+        try {
+            const user = await UserModel.findOne(
+                { _id: req.body.id },
+                { password: 0 }
+            );
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    message: "User not found for this",
+                });
+            }
+            res.status(200).send({
+                success: true,
+                data: user,
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).send({
+                success: false,
+                message: "Internal Server Error",
+            });
+        }
+    }
+);
+
+router.post("/token", async (req, res) => {
     const refreshToken = req.body.token;
     if (refreshToken === null) return res.sendStatus(401);
+    const refreshTokens = await getRefreshTokens();
     if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
     jwt.verify(refreshToken, process.env.JWT_ACC_ACTIVATE, (err, user) => {
         if (err) return res.sendStatus(403);
@@ -214,10 +266,24 @@ function generateAccessToken(user) {
     });
 }
 
-router.delete("/logout", (req, res) => {
+router.delete("/logout", async (req, res) => {
+    await removeRefreshToken(req.body.token);
     res.clearCookie("token");
-    refreshTokens = refreshTokens.filter((token) => token !== req.body.token);
     res.sendStatus(204);
 });
+
+router.get(
+    "/search",
+    passport.authenticate("jwt", { session: false }),
+    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    async (req, res) => {
+        const searchString = req.query.q;
+        const users = await UserModel.find(
+            { name: { $regex: `^${searchString}` } },
+            "name"
+        ).exec();
+        return res.status(200).json(users);
+    }
+);
 
 module.exports = router;

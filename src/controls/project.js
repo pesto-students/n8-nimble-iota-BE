@@ -1,11 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const ProjectsModel = mongoose.model("Projects");
+const SprintsModel = mongoose.model("Sprints");
 const passport = require("passport");
 const UsersModel = mongoose.model("Users");
-const { roles } = require("../constants");
+const { roles, sprintStatus } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
+const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
 
 router.post(
     "/project",
@@ -18,12 +20,43 @@ router.post(
             }).exec();
             if (user.projects.length >= 1)
                 return res.status(200).send("A default project already exists");
+            const meeting = await sdk.createMeeting(
+                {
+                    title: "Default Room",
+                    presetName: "nimble",
+                },
+                {
+                    organizationId: process.env.DYTE_ORG_ID,
+                    Authorization: process.env.DYTE_API_KEY,
+                }
+            );
+            if (!meeting.success) {
+                return res.status(500).send({
+                    message: "Unable to create room.",
+                });
+            }
+            const upcomingSprint = await SprintsModel.create({
+                name: "Sprint_1",
+                retrospectives: [],
+                activities: [],
+                status: sprintStatus.UPCOMING,
+            });
+            upcomingSprint.save();
             const project = await ProjectsModel.create({
                 projectName: "Default Project",
                 startDate: Date.now(),
-                members: [],
+                members: [
+                    {
+                        userId: user._id,
+                        standups: [],
+                    },
+                ],
                 tickets: [],
-                sprints: [],
+                sprints: [upcomingSprint._id],
+                meetingRoom: {
+                    roomName: meeting?.data?.meeting?.roomName,
+                    roomId: meeting?.data?.meeting?.id,
+                },
             });
             user.projects.push(project._id);
             user.save();
@@ -39,16 +72,33 @@ router.post(
 router.get(
     "/projects",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
     async (req, res) => {
         try {
             const user = await UsersModel.findOne({
                 email: req.user.email,
             }).exec();
             const userProjects = user.projects;
+
             const projects = await ProjectsModel.find({
-                _id: { $in: userProjects },
-            }).exec();
+                $or: [
+                    { _id: { $in: userProjects } },
+                    { members: { userId: user._id } },
+                ],
+            })
+                .populate("sprints")
+                .lean()
+                .exec();
+            for (let i = 0; i < projects.length; i++) {
+                const val = projects[i];
+                for (let j = 0; j < val.members.length; j++) {
+                    const member = val.members[j];
+                    const user = await UsersModel.findById(
+                        member.userId,
+                        "name email active"
+                    ).exec();
+                    val.members[j] = { ...member, user };
+                }
+            }
             return res.status(200).json(projects);
         } catch (error) {
             return res
@@ -63,8 +113,8 @@ router.post(
     passport.authenticate("jwt", { session: false }),
     checkIsInRole(roles.ROLE_SCRUMMASTER),
     async (req, res) => {
-        const { memberEmail, projectId } = req.body;
-        const user = await UsersModel.findOne({ email: memberEmail }).exec();
+        const { memberId, projectId } = req.body;
+        const user = await UsersModel.findById(memberId).exec();
         const project = await ProjectsModel.findById(projectId).exec();
         if (
             Array(project.members).findIndex((e) => e.user_id === user._id) >= 0
@@ -84,9 +134,67 @@ router.post(
                     result.markModified("members");
                     result.save(function (saveerr, saveresult) {
                         if (!saveerr) {
-                            res.status(200).send(saveresult);
+                            res.status(201).send(saveresult);
                         } else {
                             res.status(400).send(saveerr.message);
+                        }
+                    });
+                }
+            } else {
+                res.status(400).send(err.message);
+            }
+        });
+    }
+);
+
+router.post(
+    "/addStandup",
+    passport.authenticate("jwt", { session: false }),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
+    async (req, res) => {
+        const { projectId, userId, standup } = req.body;
+        ProjectsModel.findById(projectId, (err, result) => {
+            if (!err) {
+                if (!result) {
+                    return res
+                        .sendStatus(404)
+                        .send("Project was not found")
+                        .end();
+                } else {
+                    const index = result.members.findIndex(
+                        (member) => member.userId === userId
+                    );
+                    if (index < 0)
+                        return res
+                            .status(400)
+                            .send({
+                                success: false,
+                                message: "user not found under this project",
+                            })
+                            .end();
+                    if (
+                        result.members[index].standups.slice(-1)[0]?.date ===
+                        standup?.date
+                    )
+                        return res
+                            .status(400)
+                            .send({
+                                success: false,
+                                message: "user is already done with stand up",
+                            })
+                            .end();
+                    result.members[index].standups.push(standup);
+                    result.save(function (saveerr, saveresult) {
+                        if (!saveerr) {
+                            res.status(200).send({
+                                success: true,
+                                message: "Stand up updated successfully",
+                            });
+                        } else {
+                            res.status(400).send({
+                                success: false,
+                                message: saveerr.message,
+                            });
                         }
                     });
                 }
@@ -213,7 +321,7 @@ router.post(
 router.post(
     "/getAllTickets",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {
@@ -244,9 +352,9 @@ router.post(
                 if (!result) {
                     res.sendStatus(404).send("Project was not found.").end();
                 } else {
-                    const ticketIndex = result.tickets.findIndex(
-                        (ticket) => ticket.ticketId === ticketId
-                    );
+                    const ticketIndex = result.tickets.findIndex((ticket) => {
+                        return ticket.ticketId === ticketId;
+                    });
                     if (ticketIndex !== -1) {
                         // Add Validation If srpint should not be completed
                         result.tickets[ticketIndex].status = status;
@@ -278,7 +386,7 @@ router.post(
 router.post(
     "/alldevelopersOfAProject",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {
@@ -287,22 +395,28 @@ router.post(
                     res.sendStatus(404).send("Project was not found.").end();
                 } else {
                     if (result.members.length > 0) {
-                        var memObjIds = result.members.map(function (obj) {
-                            return obj["userId"]
+                        const memObjIds = result.members.map(function (obj) {
+                            return obj.userId;
                         });
-                        UsersModel.find({
-                            _id : { $in: memObjIds },
-                        },(err,result)=>{
-                            if (!result) {
-                                res.sendStatus(404).send(`Coudln't fetch developers list of porjectId ${porjectId}`).end();
+                        UsersModel.find(
+                            {
+                                _id: { $in: memObjIds },
+                            },
+                            (_err, result) => {
+                                if (!result) {
+                                    res.sendStatus(404)
+                                        .send(
+                                            `Coudln't fetch developers list of porjectId ${projectId}`
+                                        )
+                                        .end();
+                                }
+                                res.status(200).send({
+                                    success: true,
+                                    data: result,
+                                });
                             }
-                            res.status(200).send({
-                                success: true,
-                                data: result,
-                            });
-                        })
+                        );
                     }
-                   
                 }
             } else {
                 res.status(400).send(err.message);
@@ -331,7 +445,7 @@ router.post(
                         if (!saveerr) {
                             res.status(200).send({
                                 success: true,
-                                message: `Member added successfully`,
+                                message: "Member added successfully",
                             });
                         } else {
                             res.status(400).send({

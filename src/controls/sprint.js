@@ -5,7 +5,7 @@ const passport = require("passport");
 const ProjectsModel = mongoose.model("Projects");
 const router = express.Router();
 const checkIsInRole = require("../utils");
-const { roles } = require("../constants");
+const { roles, sprintStatus } = require("../constants");
 
 // router.get(
 //     "/retrospectives",
@@ -98,15 +98,20 @@ router.put(
     passport.authenticate("jwt", { session: false }),
     checkIsInRole(roles.ROLE_SCRUMMASTER),
     async (req, res) => {
+        const sprintId = req.body.sprintId;
         try {
-            await SprintsModel.findOneAndUpdate(
-                {
-                    _id: req.body.sprint_id,
-                },
-                { endDate: Date.now() }
-            );
+            const sprint = await SprintsModel.findById(sprintId).exec();
+            if (sprint.status !== sprintStatus.ACTIVE) {
+                return res.status(406).send({
+                    message: "This sprint is not active",
+                });
+            }
+            sprint.status = sprintStatus.COMPLETED;
+            sprint.enddate = Date.now();
+            sprint.save();
             return res.send({ message: "complete date updated" });
         } catch (error) {
+            console.log(error)
             return res
                 .status(500)
                 .send({ message: "server side error", error: { ...error } });
@@ -119,38 +124,53 @@ router.post(
     passport.authenticate("jwt", { session: false }),
     checkIsInRole(roles.ROLE_SCRUMMASTER),
     async (req, res) => {
+        const sprints = [];
+        const projectId = req.body.projectId;
+        const sprintId = req.body.sprintId;
         try {
-            let sprints = [];
-            const project = await ProjectsModel.findOne({
-                _id: req.body.project_id,
-            }).exec();
-            if (project.sprints && project.sprints.length === 0) {
-                const activeSprint = await SprintsModel.create({
-                    name: "Sprint_1",
-                    startDate: Date.now(),
-                    members: [],
-                    tickets: [],
-                    sprints: [],
+            const project = await ProjectsModel.findById(projectId)
+                .populate("sprints")
+                .exec();
+            const active = project.sprints.find(
+                (e) => e.status === sprintStatus.ACTIVE
+            );
+            if (active) {
+                return res.status(406).send({
+                    message:
+                        "All active sprints should be closed before starting a new one!",
                 });
-                const upcomingSprint = await SprintsModel.create({
-                    name: "Sprint_2",
-                    members: [],
-                    tickets: [],
-                    sprints: [],
+            }
+            const doc = project.sprints.find((e) => e.id === sprintId);
+            if (!doc) {
+                return res.status(406).send({
+                    message: "Sprint doesn't belong to the provided project!",
                 });
-                project.sprints.push(activeSprint._id);
-                project.sprints.push(upcomingSprint._id);
-                sprints = [activeSprint, upcomingSprint];
-            } else {
+            }
+
+            if (project.sprints && project.sprints.length) {
+                const currentSprint = await SprintsModel.findById(
+                    sprintId
+                ).exec();
+                currentSprint.status = sprintStatus.ACTIVE;
+                currentSprint.startdate = Date.now();
+                currentSprint.save();
+
                 const upcomingSprint = await SprintsModel.create({
                     name: "Sprint_" + (project.sprints.length + 1),
-                    startDate: Date.now(),
-                    members: [],
-                    tickets: [],
-                    sprints: [],
+                    retrospectives: [],
+                    activities: [],
+                    status: sprintStatus.UPCOMING,
                 });
                 project.sprints.push(upcomingSprint._id);
-                sprints = [upcomingSprint];
+                sprints.push(upcomingSprint);
+                res.status(200).send({
+                    success: true,
+                    message: "Sprint started Successfully",
+                });
+            } else {
+                res.status(406).send({
+                    message: "No sprint in the current project!",
+                });
             }
             project.save();
             return res.send(sprints);
@@ -163,12 +183,12 @@ router.post(
 );
 
 router.get(
-    "/sprints",
+    "/sprints/:project_id",
     passport.authenticate("jwt", { session: false }),
     async (req, res) => {
         try {
             const project = await ProjectsModel.findOne({
-                _id: req.body.project_id,
+                _id: req.params.project_id,
             }).exec();
             const projectSprints = project.sprints;
             const sprints = await SprintsModel.find({
