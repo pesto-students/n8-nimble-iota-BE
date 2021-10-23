@@ -222,7 +222,10 @@ router.post(
     passport.authenticate("jwt", { session: false }),
     async (req, res) => {
         try {
-            const user = await UserModel.findOne({ _id: req.body.id },{ password : 0 });
+            const user = await UserModel.findOne(
+                { _id: req.body.id },
+                { password: 0 }
+            );
             if (!user) {
                 res.status(404).send({
                     success: false,
@@ -234,7 +237,7 @@ router.post(
                 data: user,
             });
         } catch (error) {
-            console.log(error)
+            console.log(error);
             res.status(500).send({
                 success: false,
                 message: "Internal Server Error",

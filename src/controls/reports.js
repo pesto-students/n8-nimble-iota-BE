@@ -1,7 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const { redisKey } = require("../constants");
 const reportsModel = mongoose.model("Reports");
 const router = express.Router();
+const redis = require("../redis/index");
+const redisClient = redis();
+
+const generateRedisReportsKey = (sprintId) => {
+    return redisKey + "_" + sprintId;
+};
 
 router.post("/incrementStoryPoint", async (req, res) => {
     try {
@@ -20,7 +27,7 @@ router.post("/incrementStoryPoint", async (req, res) => {
                 success: true,
                 message: "Reports Data updated",
             });
-        }else{
+        } else {
             let temp = null;
             if (dateKey in result.storyPoints) {
                 temp = result.storyPoints;
@@ -39,7 +46,6 @@ router.post("/incrementStoryPoint", async (req, res) => {
                 message: "Reports Data updated",
             });
         }
-       
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: "server side error" });
@@ -49,19 +55,30 @@ router.post("/incrementStoryPoint", async (req, res) => {
 router.post("/getReportsData", async (req, res) => {
     try {
         const { sprintId } = req.body;
-        let result = await reportsModel.findOne({ sprintId: sprintId });
-        if (result) {
+        const redisReportsKey = generateRedisReportsKey(sprintId);
+        const redisResult = await redisClient.get(redisReportsKey);
+        if (redisResult) {
             res.status(200).send({
                 success: true,
-                data: result.storyPoints,
+                data: JSON.parse(redisResult),
             });
         } else {
-            res.status(404).send({
-                success: false,
-                message: `No data for ${sprintId}`,
-            });
+            let result = await reportsModel.findOne({ sprintId: sprintId });
+            await redisClient.set(redisReportsKey, JSON.stringify(result.storyPoints));
+            if (result) {
+                res.status(200).send({
+                    success: true,
+                    data: result.storyPoints,
+                });
+            } else {
+                res.status(404).send({
+                    success: false,
+                    message: `No data for ${sprintId}`,
+                });
+            }
         }
     } catch (e) {
+        console.log(e)
         res.status(500).send({
             success: false,
             message: `Internal server error`,

@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const ProjectsModel = mongoose.model("Projects");
+const SprintsModel = mongoose.model("Sprints");
 const passport = require("passport");
 const UsersModel = mongoose.model("Users");
-const { roles } = require("../constants");
+const { roles, sprintStatus } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
 const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
@@ -34,6 +35,13 @@ router.post(
                     message: "Unable to create room.",
                 });
             }
+            const upcomingSprint = await SprintsModel.create({
+                name: "Sprint_1",
+                retrospectives: [],
+                activities: [],
+                status: sprintStatus.UPCOMING,
+            });
+            upcomingSprint.save();
             const project = await ProjectsModel.create({
                 projectName: "Default Project",
                 startDate: Date.now(),
@@ -44,7 +52,7 @@ router.post(
                     },
                 ],
                 tickets: [],
-                sprints: [],
+                sprints: [upcomingSprint._id],
                 meetingRoom: {
                     roomName: meeting?.data?.meeting?.roomName,
                     roomId: meeting?.data?.meeting?.id,
@@ -70,8 +78,12 @@ router.get(
                 email: req.user.email,
             }).exec();
             const userProjects = user.projects;
+
             const projects = await ProjectsModel.find({
-                _id: { $in: userProjects },
+                $or: [
+                    { _id: { $in: userProjects } },
+                    { members: { userId: user._id } },
+                ],
             })
                 .populate("sprints")
                 .lean()
@@ -122,7 +134,7 @@ router.post(
                     result.markModified("members");
                     result.save(function (saveerr, saveresult) {
                         if (!saveerr) {
-                            res.status(200).send(saveresult);
+                            res.status(201).send(saveresult);
                         } else {
                             res.status(400).send(saveerr.message);
                         }
@@ -138,30 +150,34 @@ router.post(
 router.post(
     "/addStandup",
     passport.authenticate("jwt", { session: false }),
-    // checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId, userId, standup } = req.body;
-        console.log(projectId, userId, standup);
         ProjectsModel.findById(projectId, (err, result) => {
             if (!err) {
                 if (!result) {
-                    res.sendStatus(404).send("Project was not found").end();
+                    return res
+                        .sendStatus(404)
+                        .send("Project was not found")
+                        .end();
                 } else {
                     const index = result.members.findIndex(
                         (member) => member.userId === userId
                     );
                     if (index < 0)
-                        res.status(400)
+                        return res
+                            .status(400)
                             .send({
                                 success: false,
                                 message: "user not found under this project",
                             })
                             .end();
                     if (
-                        result.members[index].standups.slice(-1)[0].date ===
-                        standup.date
+                        result.members[index].standups.slice(-1)[0]?.date ===
+                        standup?.date
                     )
-                        res.status(400)
+                        return res
+                            .status(400)
                             .send({
                                 success: false,
                                 message: "user is already done with stand up",
@@ -305,7 +321,7 @@ router.post(
 router.post(
     "/getAllTickets",
     passport.authenticate("jwt", { session: false }),
-    checkIsInRole(roles.ROLE_SCRUMMASTER),
+    checkIsInRole(roles.ROLE_SCRUMMASTER, roles.ROLE_DEVELOPER),
     async (req, res) => {
         const { projectId } = req.body;
         ProjectsModel.findById(projectId, (err, result) => {

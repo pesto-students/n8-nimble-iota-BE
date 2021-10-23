@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { sprintStatus } = require("../constants");
 const Schema = mongoose.Schema;
 const retrospectivesSchema = new Schema({
     positives: { type: [String], required: false },
@@ -22,14 +23,18 @@ const sprintsSchema = new Schema({
     startdate: { type: Date, required: false },
     enddate: { type: Date, required: false },
     retrospectives: {
-        type: retrospectivesSchema,
+        type: [retrospectivesSchema],
         required: false,
     },
     activities: { type: [activitiesSchema], required: false },
     status: {
         type: String,
-        enum: ["closed", "active", "upcoming"],
-        default: "upcoming",
+        enum: [
+            sprintStatus.UPCOMING,
+            sprintStatus.ACTIVE,
+            sprintStatus.COMPLETED,
+        ],
+        default: sprintStatus.UPCOMING,
     },
 });
 
