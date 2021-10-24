@@ -12,7 +12,13 @@ redis();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(
+    cors({
+        origin: process.env.CLIENT_URL,
+        credentials: true,
+        exposedHeaders: ["set-cookie"],
+    })
+);
 app.enable("trust proxy");
 app.use(
     session({
