@@ -39,6 +39,7 @@ router.put("/forgotpassword", async (req, res) => {
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
                 return res.status(500).send({
+                    success: false,
                     message: "We could not send mail as of now : " + error,
                 });
             }
@@ -46,7 +47,10 @@ router.put("/forgotpassword", async (req, res) => {
             user.save();
             return res
                 .status(200)
-                .send({ message: "new password sent successfully" });
+                .send({
+                    success: true,
+                    message: "new password sent successfully",
+                });
         });
     } catch (err) {
         return res.status(500).send({ message: "server side error" });
@@ -206,7 +210,12 @@ router.post("/login", async (req, res, next) => {
                     process.env.JWT_ACC_ACTIVATE
                 );
                 await pushRefreshToken(refreshToken);
-                res.cookie("token", token, { httpOnly: true }).json({
+                res.cookie("token", token, {
+                    maxAge: new Date() * 0.001 + 300,
+                    domain: process.env.CLIENT_URL,
+                    secure: true,
+                    sameSite: "none",
+                }).json({
                     ...body,
                     token: refreshToken,
                 });
@@ -254,7 +263,12 @@ router.post("/token", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_ACC_ACTIVATE, (err, user) => {
         if (err) return res.sendStatus(403);
         const token = generateAccessToken({ user: user.user });
-        res.cookie("token", token, { httpOnly: true }).send({
+        res.cookie("token", token, {
+            maxAge: new Date() * 0.001 + 300,
+            domain: process.env.CLIENT_URL,
+            secure: true,
+            sameSite: "none",
+        }).send({
             message: "token refreshed!",
         });
     });
