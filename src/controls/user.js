@@ -106,8 +106,6 @@ router.put("/activate", (req, res) => {
                     { active: true }
                 );
                 return res.status(200).send({
-                    // ...userfound._doc,
-                    // token,
                     message: "Account is activated Successfully",
                 });
             }
