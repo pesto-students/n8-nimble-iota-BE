@@ -6,6 +6,7 @@ const cors = require("cors");
 const connection = require("./models");
 const cookieParser = require("cookie-parser");
 const redis = require("./redis");
+const MongoStore = require("connect-mongo");
 
 connection();
 redis();
@@ -22,9 +23,10 @@ app.use(
 app.enable("trust proxy");
 app.use(
     session({
-        secret: process.env.SESSION_SECRET,
+        secret: "foo",
         resave: false,
         saveUninitialized: true,
+        store: new MongoStore({ mongoUrl: process.env.MONGODB_URI }),
         cookie: {
             secure: true,
             maxAge: 5184000000,
