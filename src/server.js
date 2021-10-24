@@ -22,10 +22,7 @@ app.use(
 app.enable("trust proxy");
 app.use(
     session({
-        name: "session",
         secret: process.env.SESSION_SECRET,
-        store: true,
-        key: "sid",
         resave: false,
         saveUninitialized: true,
         cookie: {
