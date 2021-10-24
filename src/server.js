@@ -13,17 +13,18 @@ redis();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.set("trust proxy", 1);
+app.enable("trust proxy");
 app.use(
     session({
         name: "session",
         secret: process.env.SESSION_SECRET,
+        store: true,
+        key: "sid",
         resave: false,
         saveUninitialized: true,
         cookie: {
-            path: "/",
             secure: true,
-            httpOnly: true,
+            maxAge: 5184000000,
         },
     })
 );
