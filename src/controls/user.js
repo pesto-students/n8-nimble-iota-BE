@@ -208,10 +208,7 @@ router.post("/login", async (req, res, next) => {
                     process.env.JWT_ACC_ACTIVATE
                 );
                 await pushRefreshToken(refreshToken);
-                res.cookie("token", token, {
-                    secure: true,
-                    sameSite: "none",
-                }).json({
+                res.cookie("token", token).json({
                     ...body,
                     token: refreshToken,
                 });
@@ -259,10 +256,7 @@ router.post("/token", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_ACC_ACTIVATE, (err, user) => {
         if (err) return res.sendStatus(403);
         const token = generateAccessToken({ user: user.user });
-        res.cookie("token", token, {
-            secure: true,
-            sameSite: "none",
-        }).send({
+        res.cookie("token", token).send({
             message: "token refreshed!",
         });
     });
