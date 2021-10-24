@@ -21,7 +21,8 @@ app.use(
         cookie: {
             path: "/",
             secure: true,
-            httpOnly: true,
+            // httpOnly: true,
+            sameSite: "none",
         },
     })
 );
