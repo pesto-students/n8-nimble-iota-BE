@@ -45,12 +45,10 @@ router.put("/forgotpassword", async (req, res) => {
             }
             user.password = newpassword;
             user.save();
-            return res
-                .status(200)
-                .send({
-                    success: true,
-                    message: "new password sent successfully",
-                });
+            return res.status(200).send({
+                success: true,
+                message: "new password sent successfully",
+            });
         });
     } catch (err) {
         return res.status(500).send({ message: "server side error" });
@@ -210,8 +208,9 @@ router.post("/login", async (req, res, next) => {
                     process.env.JWT_ACC_ACTIVATE
                 );
                 await pushRefreshToken(refreshToken);
-                res.cookie("token", token, { httpOnly: true }).json({
+                res.json({
                     ...body,
+                    accessToken: token,
                     token: refreshToken,
                 });
             });
@@ -258,21 +257,21 @@ router.post("/token", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_ACC_ACTIVATE, (err, user) => {
         if (err) return res.sendStatus(403);
         const token = generateAccessToken({ user: user.user });
-        res.cookie("token", token, { httpOnly: true }).send({
+        res.send({
             message: "token refreshed!",
+            accessToken: token,
         });
     });
 });
 
 function generateAccessToken(user) {
     return jwt.sign(user, process.env.JWT_ACC_ACTIVATE, {
-        expiresIn: "15m",
+        expiresIn: "15s",
     });
 }
 
 router.delete("/logout", async (req, res) => {
     await removeRefreshToken(req.body.token);
-    res.clearCookie("token");
     res.sendStatus(204);
 });
 

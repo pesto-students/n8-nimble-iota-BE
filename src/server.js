@@ -4,34 +4,24 @@ const app = express();
 const session = require("express-session");
 const cors = require("cors");
 const connection = require("./models");
-const cookieParser = require("cookie-parser");
 const redis = require("./redis");
-const MongoStore = require("connect-mongo");
 
 connection();
 redis();
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(
     cors({
         origin: process.env.CLIENT_URL,
         credentials: true,
-        exposedHeaders: ["set-cookie"],
     })
 );
 app.enable("trust proxy");
 app.use(
     session({
-        secret: "foo",
+        secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true,
-        store: new MongoStore({ mongoUrl: process.env.MONGODB_URI }),
-        cookie: {
-            secure: true,
-            maxAge: 5184000000,
-            httpOnly: true,
-        },
+        saveUninitialized: false,
     })
 );
 app.use(express.urlencoded({ extended: false }));
