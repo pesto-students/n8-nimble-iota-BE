@@ -19,10 +19,9 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            path: "/",
             secure: true,
-            // httpOnly: true,
-            sameSite: "none",
+            proxy: true,
+            maxAge: 5184000000,
         },
     })
 );
