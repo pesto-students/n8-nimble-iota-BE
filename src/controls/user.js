@@ -266,7 +266,7 @@ router.post("/token", async (req, res) => {
 
 function generateAccessToken(user) {
     return jwt.sign(user, process.env.JWT_ACC_ACTIVATE, {
-        expiresIn: "15s",
+        expiresIn: "15m",
     });
 }
 
