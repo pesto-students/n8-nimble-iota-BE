@@ -45,12 +45,10 @@ router.put("/forgotpassword", async (req, res) => {
             }
             user.password = newpassword;
             user.save();
-            return res
-                .status(200)
-                .send({
-                    success: true,
-                    message: "new password sent successfully",
-                });
+            return res.status(200).send({
+                success: true,
+                message: "new password sent successfully",
+            });
         });
     } catch (err) {
         return res.status(500).send({ message: "server side error" });
@@ -212,7 +210,6 @@ router.post("/login", async (req, res, next) => {
                 await pushRefreshToken(refreshToken);
                 res.cookie("token", token, {
                     maxAge: new Date() * 0.001 + 300,
-                    domain: process.env.CLIENT_URL,
                     secure: true,
                     sameSite: "none",
                 }).json({
@@ -265,7 +262,6 @@ router.post("/token", async (req, res) => {
         const token = generateAccessToken({ user: user.user });
         res.cookie("token", token, {
             maxAge: new Date() * 0.001 + 300,
-            domain: process.env.CLIENT_URL,
             secure: true,
             sameSite: "none",
         }).send({
