@@ -209,7 +209,6 @@ router.post("/login", async (req, res, next) => {
                 );
                 await pushRefreshToken(refreshToken);
                 res.cookie("token", token, {
-                    maxAge: new Date() * 0.001 + 300,
                     secure: true,
                     sameSite: "none",
                 }).json({
@@ -261,7 +260,6 @@ router.post("/token", async (req, res) => {
         if (err) return res.sendStatus(403);
         const token = generateAccessToken({ user: user.user });
         res.cookie("token", token, {
-            maxAge: new Date() * 0.001 + 300,
             secure: true,
             sameSite: "none",
         }).send({
