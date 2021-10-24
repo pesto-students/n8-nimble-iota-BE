@@ -18,6 +18,11 @@ app.use(
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
+        cookie: {
+            path: "/",
+            secure: true,
+            httpOnly: true,
+        },
     })
 );
 app.use(express.urlencoded({ extended: false }));
