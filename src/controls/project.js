@@ -32,6 +32,7 @@ router.post(
             );
             if (!meeting.success) {
                 return res.status(500).send({
+                    success: false,
                     message: "Unable to create room.",
                 });
             }
@@ -62,9 +63,11 @@ router.post(
             user.save();
             return res.json(project.toObject());
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -101,9 +104,11 @@ router.get(
             }
             return res.status(200).json(projects);
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -406,7 +411,7 @@ router.post(
                                 if (!result) {
                                     res.sendStatus(404)
                                         .send(
-                                            `Coudln't fetch developers list of porjectId ${projectId}`
+                                            `Coudln't fetch developers list of projectId ${projectId}`
                                         )
                                         .end();
                                 }

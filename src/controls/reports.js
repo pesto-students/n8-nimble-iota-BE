@@ -48,7 +48,7 @@ router.post("/incrementStoryPoint", async (req, res) => {
         }
     } catch (err) {
         console.log(err);
-        res.status(500).send({ message: "server side error" });
+        res.status(500).send({ success: false, message: "server side error" });
     }
 });
 
@@ -63,8 +63,11 @@ router.post("/getReportsData", async (req, res) => {
                 data: JSON.parse(redisResult),
             });
         } else {
-            let result = await reportsModel.findOne({ sprintId: sprintId });
-            await redisClient.set(redisReportsKey, JSON.stringify(result.storyPoints));
+            const result = await reportsModel.findOne({ sprintId: sprintId });
+            await redisClient.set(
+                redisReportsKey,
+                JSON.stringify(result.storyPoints)
+            );
             if (result) {
                 res.status(200).send({
                     success: true,
@@ -78,7 +81,7 @@ router.post("/getReportsData", async (req, res) => {
             }
         }
     } catch (e) {
-        console.log(e)
+        console.log(e);
         res.status(500).send({
             success: false,
             message: `Internal server error`,
