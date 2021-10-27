@@ -153,7 +153,7 @@ router.post(
                     result.markModified("members");
                     result.save(async function (saveerr, saveresult) {
                         if (!saveerr) {
-                            mailOptions.html = `<h2>You have been added to a new Porject by Scrummaster. Please login to your account to check.</h2><br/>`
+                            mailOptions.html = `<h2>You have been added to a new Project by Scrummaster. Please login to your account to check.</h2><br/>`
                             mailOptions.to = user.email;
                             const info = await transporter.sendMail(mailOptions);
                             if (!info.messageId) {
