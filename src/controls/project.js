@@ -8,6 +8,20 @@ const { roles, sprintStatus } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
 const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_ID,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+});
+
+const mailOptions = {
+    from: process.env.EMAIL_ID,
+    subject: "Assigned New Project",
+};
 
 router.post(
     "/project",
@@ -137,8 +151,18 @@ router.post(
                         standups: [],
                     });
                     result.markModified("members");
-                    result.save(function (saveerr, saveresult) {
+                    result.save(async function (saveerr, saveresult) {
                         if (!saveerr) {
+                            mailOptions.html = `<h2>You have been added to a new Porject by Scrummaster. Please login to your account to check.</h2><br/>`
+                            mailOptions.to = user.email;
+                            const info = await transporter.sendMail(mailOptions);
+                            if (!info.messageId) {
+                                return done(
+                                    null,
+                                    null,
+                                    "We could not send account activation mail as of now."
+                                );
+                            }
                             res.status(201).send(saveresult);
                         } else {
                             res.status(400).send(saveerr.message);
