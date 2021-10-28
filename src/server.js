@@ -9,6 +9,7 @@ const redis = require("./redis");
 connection();
 redis();
 
+if (process.env.NODE_ENV === "production") console.log = function () {};
 app.use(express.json());
 app.use(
     cors({
