@@ -135,10 +135,11 @@ router.post(
         const { memberId, projectId } = req.body;
         const user = await UsersModel.findById(memberId).exec();
         const project = await ProjectsModel.findById(projectId).exec();
-        if (
-            Array(project.members).findIndex((e) => e.user_id === user._id) >= 0
-        ) {
-            return res.status(200).send("Member already exists.");
+        if (project.members.findIndex((e) => e.userId === user.id) >= 0) {
+            return res.status(406).send({
+                success: false,
+                message: "User already a member!",
+            });
         }
 
         ProjectsModel.findById(projectId, (err, result) => {
