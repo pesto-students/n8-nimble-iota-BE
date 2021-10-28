@@ -257,7 +257,7 @@ router.post(
                 { password: 0 }
             );
             if (!user) {
-                res.status(404).send({
+                return res.status(404).send({
                     success: false,
                     message: "User not found for this",
                 });

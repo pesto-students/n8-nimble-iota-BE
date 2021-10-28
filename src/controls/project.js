@@ -146,6 +146,11 @@ router.post(
                 if (!result) {
                     res.sendStatus(404).send("Project was not found").end();
                 } else {
+                    if (result.members.find((e) => e.userId === user._id))
+                        return res.status(406).send({
+                            success: false,
+                            message: "User already a member!",
+                        });
                     result.members.push({
                         userId: user._id,
                         standups: [],
@@ -153,9 +158,11 @@ router.post(
                     result.markModified("members");
                     result.save(async function (saveerr, saveresult) {
                         if (!saveerr) {
-                            mailOptions.html = `<h2>You have been added to a new Project by Scrummaster. Please login to your account to check.</h2><br/>`
+                            mailOptions.html = `<h2>You have been added to a new Project by Scrummaster. Please login to your account to check.</h2><br/>`;
                             mailOptions.to = user.email;
-                            const info = await transporter.sendMail(mailOptions);
+                            const info = await transporter.sendMail(
+                                mailOptions
+                            );
                             if (!info.messageId) {
                                 return done(
                                     null,
