@@ -99,7 +99,7 @@ router.get(
             const projects = await ProjectsModel.find({
                 $or: [
                     { _id: { $in: userProjects } },
-                    { members: { userId: user._id } },
+                    { "members.userId": user._id },
                 ],
             })
                 .populate("sprints")
