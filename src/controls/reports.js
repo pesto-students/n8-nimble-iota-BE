@@ -89,4 +89,22 @@ router.post("/getReportsData", async (req, res) => {
     }
 });
 
+router.get("/flushCache/:sprintId", async (req, res) => {
+    try {
+        const { sprintId } = req.params;
+        const redisReportsKey = generateRedisReportsKey(sprintId);
+        redisClient.del(redisReportsKey)
+        res.status(200).send({
+            success: true,
+            message: `Cached flushed for sprint Id ${sprintId}`,
+        });
+    }catch(e){
+        res.status(500).send({
+            success: false,
+            message: `Coudln't flush Cache for sprint Id ${sprintId}`,
+        });
+    }
+    
+})
+
 module.exports = router;

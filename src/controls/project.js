@@ -434,6 +434,7 @@ router.post(
                         const memObjIds = result.members.map(function (obj) {
                             return obj.userId;
                         });
+                        //TODO ALso put a check that role should be develoepr (exclude scrummaster)
                         UsersModel.find(
                             {
                                 _id: { $in: memObjIds },
