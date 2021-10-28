@@ -44,7 +44,7 @@ passport.use(
                     },
                     process.env.JWT_ACC_ACTIVATE
                 );
-                mailOptions.html = `<h2>Please click the link below to activate</h2><br/>
+                mailOptions.html = `<h2>Please click the link below to activate your Nimble account</h2><br/>
           <a href='${process.env.CLIENT_URL}/auth/activate/${token}'>${process.env.CLIENT_URL}/auth/activate/${token}</a>`;
                 mailOptions.to = email;
                 const info = await transporter.sendMail(mailOptions);

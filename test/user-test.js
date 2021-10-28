@@ -55,6 +55,7 @@ describe("Users Register", () => {
                     res.should.have.status(200);
                     res.body.should.be.a("object");
                     expect(res.body).to.deep.equalInAnyOrder({
+                        success: true,
                         message: "Please activate your account from your email",
                     });
                     done();
@@ -78,10 +79,12 @@ describe("Users login", () => {
                     res.should.have.status(200);
                     res.body.should.be.a("object");
                     expect(res.body).to.have.keys([
+                        "id",
                         "name",
                         "email",
                         "role",
                         "token",
+                        "accessToken",
                     ]);
                     done();
                 });
