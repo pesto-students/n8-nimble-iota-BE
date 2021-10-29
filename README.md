@@ -54,36 +54,18 @@ Link for backend Repo : https://github.com/pesto-students/n8-nimble-iota-BE
 https://pesto-students.github.io/n8-nimble-iota-FE/docs/intro
 
 
+### Team
 
 
+1. ### Vipan kumar
+
+    Hey there. I am a passionate coder from Hoshiarpur, punjab.  I am currently working with MakeMyTrip India . I have industry experience of 1 year. For the last year, I am working on ReactJs and NodeJs. I have built Reporting Engine from scratch to fetch data from different sources parallel and was able to acheive good latencies (less than 800ms). 
+
+    [LinkedIn 💼](https://www.linkedin.com/in/vipank/")
+
+    [Email 📬](mailto:vipan16116@iiitd.ac.in)
+
+1. Vishnu Thiyagarajan
+2. Jyotirmaya Sahu
 
 
-
-
-## Week 1 Releases
-
--   Landing Page
--   Routing
--   Authentication
--   Refresh Token
--   Email Verification
--   Listing Projects
--   API for adding Team Members
--   Basic Backlog screen
--   Basic Retrospectives screen
--   User Profile
--   API for Sprints
--   Payments integration with Razorpay
--   Redis integration
--   Added Workflows for Github Actions
-
-## Week 2 Releases
-
--   Minor Fixes to Landing Screen
--   Added Poker, Scrum Board, Standups, Retrospectives & Reports
--   Added Backlogs
--   Added Filters to backlogs
--   Added Dummy Login Buttons
--   Added Footer below Landing Page
--   Added Dyte meeting Integration
--   Added Sprint Navigation Ui
