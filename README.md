@@ -17,8 +17,9 @@ https://github.com/pesto-students/n8-nimble-iota-FE
 #### Table of Contents  
 1. [About the Project](#about)  
 2. [Project Artefacts](#artefacts)
-3. [Get Started](#start)
-4. [Team](#team)
+3. [Db Schema](#Db schema)
+4. [Get Started](#start)
+5. [Team](#team)
 
   
 
@@ -38,7 +39,9 @@ Nimble is an Agile Sprint management platform which provides functionality to ma
 
 ### Project Artifacts
 
-Link for the PRD : 
+Link for the PRD : https://docs.google.com/document/d/e/2PACX-1vSC8xFp4kAbnqykWznJ8h_maf9822SaMK_nNVWKqi5Ks7-0FI628xuGHDLpZduiwji_7fSqNehv7Vp4/pub
+
+One Pager : https://drive.google.com/file/d/1o1JnAjs5VN2c8HKWu2vgbzllwSFxy5vg/view?usp=sharing
 
 Wireframe Link: https://www.figma.com/file/MoEiBCzh58qnInvfRFHzyA/nimble?node-id=0%3A1
 
@@ -46,7 +49,18 @@ Scrum Master Figma Prototype: https://www.figma.com/proto/MoEiBCzh58qnInvfRFHzyA
 
 Developer flow Figma Prototype:  https://www.figma.com/proto/MoEiBCzh58qnInvfRFHzyA/nimble?node-id=250%3A2362&scaling=min-zoom&page-id=0%3A1&starting-point-node-id=250%3A2362&show-proto-sidebar=1
 
-Link for backend Repo : https://github.com/pesto-students/n8-nimble-iota-BE
+
+### Database Schema
+
+
+#### MongoDB
+
+<img src="https://firebasestorage.googleapis.com/v0/b/nim-ble.appspot.com/o/profile-images%2FMongoDb_schema.png?alt=media&token=eccb16a1-52c5-46cf-b7dd-2a7c2a168432" alt="MonogoDB Schema">
+
+#### Firebase
+
+<img src="https://firebasestorage.googleapis.com/v0/b/nim-ble.appspot.com/o/profile-images%2FFirebase_schema.png?alt=media&token=0946e98d-4804-42e3-b957-c5611f737911" alt="Firebase Schema">
+
 
 
 ### Getting started
@@ -65,7 +79,20 @@ https://pesto-students.github.io/n8-nimble-iota-FE/docs/intro
 
     [Email 📬](mailto:vipan16116@iiitd.ac.in)
 
-1. Vishnu Thiyagarajan
-2. Jyotirmaya Sahu
+2. ### Vishnu Thiyagarajan
+
+    Hi. I'm a JS developer & MERN Stack Enthusiast from Hyderabad. I love everything that has to do with Coding & Problem solving, Application designing and development. I have been working as a Software developer for 4.5 years on various technologies like Sentinel rule based engine and developed MERN Stack application from scratch.
+
+    [LinkedIn 💼](https://www.linkedin.com/in/vishnu-thiyagarajan-2aa6a6129/)
+
+    [Email 📬](mailto:mrtvishnu@gmail.com)
+
+3. ### Jyotirmaya Sahu
+
+    Hi, I'm a full stack developer & tech enthusiast from Odisha. I like to experiment with new things in the tech market. I have been Coding from last 2 years professionally and worked with multiple MNCs.
+
+    [LinkedIn 💼](https://www.linkedin.com/in/jyotirmaya-sahu-52052b133/)
+
+    [Email 📬](mailto:jyotirmayasahu38@gmail.com)
 
 
