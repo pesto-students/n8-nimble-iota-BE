@@ -2,33 +2,28 @@
 <p align="center"><b>Nimble Backend</b></p>
 <p align="center">Nimble : Quickly, Easily and lightly</p>
 
-<p align="center">Live Frontend url : <a>https://nim-ble.netlify.app</a></p>
+<p align="center">Live Frontend url : <a href="https://nim-blenetlify.app">https://nim-blenetlify.app</a></p>
 
 <hr>
 
-#### Backend Api Documentation
-
-https://pesto-students.github.io/n8-nimble-iota-FE/docs/Apidocumentation
+#### Table of Contents  
+1. [About the Project](#about)  
+2. [Major Features](#major-features)
+3. [Project Artefacts](#artefacts)
+4. [HLD](#hld)
+5. [Db Schema](#Dbschema)
+6. [Get Started](#start)
+7. [Team](#team)
 
 ### Frontend Repo
 
 https://github.com/pesto-students/n8-nimble-iota-FE
 
-#### Table of Contents  
-1. [About the Project](#about)  
-2. [Project Artefacts](#artefacts)
-3. [Db Schema](#Db schema)
-4. [Get Started](#start)
-5. [Team](#team)
-
-  
-
-
 ### About the Project
 
 Nimble is an Agile Sprint management platform which provides functionality to manage all the three phases of a sprint- Pre,Active and Post. Pre sprint consists of effort estimation of various tickets using Poker board, Active Sprint consists of tracking tickets and Post sprint consists of retrospectives and reports.
 
-#### Major Features
+### Major Features
 1. Scrum Poker for Ticket Estimation
 2. Scrum board for tracking tickets (with Drag Drop feature)
 3. Sprint Mangement
@@ -50,8 +45,11 @@ Scrum Master Figma Prototype: https://www.figma.com/proto/MoEiBCzh58qnInvfRFHzyA
 Developer flow Figma Prototype:  https://www.figma.com/proto/MoEiBCzh58qnInvfRFHzyA/nimble?node-id=250%3A2362&scaling=min-zoom&page-id=0%3A1&starting-point-node-id=250%3A2362&show-proto-sidebar=1
 
 
-### Database Schema
+### High Level Diagram (HLD)
 
+<img src="https://firebasestorage.googleapis.com/v0/b/nim-ble.appspot.com/o/profile-images%2FHLD.png?alt=media&token=8fdb17d4-48fe-4a8d-81ab-bdc53265d06a" alt="HLD">
+
+### Database Schema
 
 #### MongoDB
 
@@ -62,6 +60,9 @@ Developer flow Figma Prototype:  https://www.figma.com/proto/MoEiBCzh58qnInvfRFH
 <img src="https://firebasestorage.googleapis.com/v0/b/nim-ble.appspot.com/o/profile-images%2FFirebase_schema.png?alt=media&token=0946e98d-4804-42e3-b957-c5611f737911" alt="Firebase Schema">
 
 
+#### Backend Api Documentation
+
+https://pesto-students.github.io/n8-nimble-iota-FE/docs/Apidocumentation
 
 ### Getting started
 
