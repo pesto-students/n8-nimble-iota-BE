@@ -8,6 +8,8 @@ let deepEqualInAnyOrder = require("deep-equal-in-any-order");
 let chaiHttp = require("chai-http");
 let server = require("../src/server");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
 
 let should = chai.should();
 const { expect } = chai;
@@ -16,12 +18,12 @@ chai.use(chaiHttp);
 chai.use(deepEqualInAnyOrder);
 
 let body = {
-    name: "pesto",
-    email: "pestonimble@gmail.com",
+    name: "vishnu thiyagarajan",
+    email: "vishnu.thg@gmail.com",
     password: "password",
     role: {
         _id: "614b05624504fee469d60ba1",
-        name: "Scrum Master",
+        name: "scrummaster",
     },
 };
 
@@ -42,7 +44,7 @@ describe("Roles", () => {
 
 describe("Users Register", () => {
     beforeEach((done) => {
-        User.deleteOne({ email: "pestonimble@gmail.com" }, (err) => {
+        User.deleteOne({ email: body.email }, (err) => {
             done();
         });
     });
@@ -65,7 +67,7 @@ describe("Users Register", () => {
 });
 
 describe("Users login", () => {
-    beforeEach((done) => {
+    beforeEach((done)  => {
         User.updateOne({ email: body.email }, { active: true }, (err) => {
             done();
         });
@@ -102,11 +104,7 @@ describe("All developers", () => {
         { user: tokenPayload },
         process.env.JWT_ACC_ACTIVATE
     );
-    // beforeEach((done) => {
-    //     user = User.findOne({ email: body.email }, (err) => {
-    //         done();
-    //     });
-    // });
+
     describe("/GET developers", () => {
         it("it should get all developers", (done) => {
             chai.request(server)
