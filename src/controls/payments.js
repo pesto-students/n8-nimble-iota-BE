@@ -43,8 +43,9 @@ router.post(
                 key_id: process.env.PAYMENT_ID,
                 key_secret: process.env.PAYMENT_KEY,
             });
+            //Razorpay accepts money in Paisa--> 1 Rs = 100paisa
             const options = {
-                amount: amount,
+                amount: amount*100,
                 currency: "INR",
                 receipt: "Order Receipt",
             };
