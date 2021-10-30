@@ -10,10 +10,10 @@ router.post("/role", async (req, res) => {
         role.createdAt = new Date().toISOString();
         role.save((err, docs) => {
             if (err) throw err;
-            res.status(201).send({ message: "role added" });
+            res.status(201).send({ success: true, message: "role added" });
         });
     } catch (err) {
-        res.status(500).send({ message: "server side error" });
+        res.status(500).send({ success: false, message: "server side error" });
     }
 });
 
@@ -22,7 +22,7 @@ router.get("/allroles", async (req, res) => {
         const roles = await RoleModel.find({});
         res.send(roles);
     } catch (err) {
-        res.status(500).send({ message: "server side error" });
+        res.status(500).send({ success: false, message: "server side error" });
     }
 });
 

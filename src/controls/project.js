@@ -8,6 +8,20 @@ const { roles, sprintStatus } = require("../constants");
 const checkIsInRole = require("../utils");
 const router = express.Router();
 const sdk = require("api")("@dyte/v1.0#4xeg4zkszwz5wi");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_ID,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+});
+
+const mailOptions = {
+    from: process.env.EMAIL_ID,
+    subject: "Assigned New Project",
+};
 
 router.post(
     "/project",
@@ -32,6 +46,7 @@ router.post(
             );
             if (!meeting.success) {
                 return res.status(500).send({
+                    success: false,
                     message: "Unable to create room.",
                 });
             }
@@ -62,9 +77,11 @@ router.post(
             user.save();
             return res.json(project.toObject());
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -82,7 +99,7 @@ router.get(
             const projects = await ProjectsModel.find({
                 $or: [
                     { _id: { $in: userProjects } },
-                    { members: { userId: user._id } },
+                    { "members.userId": user._id },
                 ],
             })
                 .populate("sprints")
@@ -101,9 +118,11 @@ router.get(
             }
             return res.status(200).json(projects);
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -116,10 +135,11 @@ router.post(
         const { memberId, projectId } = req.body;
         const user = await UsersModel.findById(memberId).exec();
         const project = await ProjectsModel.findById(projectId).exec();
-        if (
-            Array(project.members).findIndex((e) => e.user_id === user._id) >= 0
-        ) {
-            return res.status(200).send("Member already exists.");
+        if (project.members.findIndex((e) => e.userId === user.id) >= 0) {
+            return res.status(406).send({
+                success: false,
+                message: "User already a member!",
+            });
         }
 
         ProjectsModel.findById(projectId, (err, result) => {
@@ -127,13 +147,30 @@ router.post(
                 if (!result) {
                     res.sendStatus(404).send("Project was not found").end();
                 } else {
+                    if (result.members.find((e) => e.userId === user._id))
+                        return res.status(406).send({
+                            success: false,
+                            message: "User already a member!",
+                        });
                     result.members.push({
                         userId: user._id,
                         standups: [],
                     });
                     result.markModified("members");
-                    result.save(function (saveerr, saveresult) {
+                    result.save(async function (saveerr, saveresult) {
                         if (!saveerr) {
+                            mailOptions.html = `<h2>You have been added to a new Project by Scrummaster. Please login to your account to check.</h2><br/>`;
+                            mailOptions.to = user.email;
+                            const info = await transporter.sendMail(
+                                mailOptions
+                            );
+                            if (!info.messageId) {
+                                return done(
+                                    null,
+                                    null,
+                                    "We could not send account activation mail as of now."
+                                );
+                            }
                             res.status(201).send(saveresult);
                         } else {
                             res.status(400).send(saveerr.message);
@@ -398,6 +435,7 @@ router.post(
                         const memObjIds = result.members.map(function (obj) {
                             return obj.userId;
                         });
+                        //TODO ALso put a check that role should be develoepr (exclude scrummaster)
                         UsersModel.find(
                             {
                                 _id: { $in: memObjIds },
@@ -406,7 +444,7 @@ router.post(
                                 if (!result) {
                                     res.sendStatus(404)
                                         .send(
-                                            `Coudln't fetch developers list of porjectId ${projectId}`
+                                            `Coudln't fetch developers list of projectId ${projectId}`
                                         )
                                         .end();
                                 }

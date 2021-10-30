@@ -33,25 +33,28 @@ router.post(
             if (!user) {
                 return res
                     .status(400)
-                    .send({ message: "No User with that email" });
+                    .send({
+                        success: false,
+                        message: "No User with that email",
+                    });
             }
             const amount = req.body.amount;
             const instance = new Razorpay({
                 key_id: process.env.PAYMENT_ID,
                 key_secret: process.env.PAYMENT_KEY,
             });
+            //Razorpay accepts money in Paisa--> 1 Rs = 100paisa
             const options = {
-                amount: amount,
+                amount: amount*100,
                 currency: "INR",
                 receipt: "Order Receipt",
             };
 
             instance.orders.create(options, function (err, order) {
                 if (err) throw err;
-                return res.status(200).send({ order: order });
+                return res.status(200).send({ success: true, order: order });
             });
         } catch (err) {
-            // console.log(err)
             res.status(500).send({
                 success: false,
                 message: "Couldn't create order",
@@ -68,17 +71,19 @@ router.post(
         try {
             const user = await UserModel.findOne({ email: req.user.email });
             if (!user) {
-                return res
-                    .status(400)
-                    .send({ message: "No User with that email" });
+                return res.status(400).send({
+                    success: false,
+                    message: "No User with that email",
+                });
             }
             const { transactionid, amount } = req.body;
             user.subscription.push({ transactionid, amount });
             user.save();
             res.status(200).send({
                 success: true,
-                message: "Subscription Updated ... Thanks for choosing Nimble :)",
-            })
+                message:
+                    "Subscription Updated ... Thanks for choosing Nimble :)",
+            });
         } catch (err) {
             // console.log(err)
             res.status(500).send({

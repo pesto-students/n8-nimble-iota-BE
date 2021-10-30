@@ -32,24 +32,30 @@ router.put("/forgotpassword", async (req, res) => {
         const newpassword = Math.random().toString(36).slice(3);
         const user = await UserModel.findOne({ email: req.body.email });
         if (!user) {
-            return res.status(400).send({ message: "No User with that email" });
+            return res
+                .status(400)
+                .send({ success: false, message: "No User with that email" });
         }
         mailOptions.text = "Your new password is " + newpassword;
         mailOptions.to = user.email;
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
                 return res.status(500).send({
+                    success: false,
                     message: "We could not send mail as of now : " + error,
                 });
             }
             user.password = newpassword;
             user.save();
-            return res
-                .status(200)
-                .send({ message: "new password sent successfully" });
+            return res.status(200).send({
+                success: true,
+                message: "new password sent successfully",
+            });
         });
     } catch (err) {
-        return res.status(500).send({ message: "server side error" });
+        return res
+            .status(500)
+            .send({ success: false, message: "server side error" });
     }
 });
 
@@ -62,13 +68,19 @@ router.put(
             if (await user.isValidPassword(req.body.oldpassword)) {
                 user.password = req.body.newpassword;
                 user.save();
-                return res
-                    .status(200)
-                    .send({ message: "password changed successfully" });
+                return res.status(200).send({
+                    success: true,
+                    message: "password changed successfully",
+                });
             }
-            return res.status(300).send({ message: "wrong old password" });
+            return res
+                .status(300)
+                .send({ success: false, message: "wrong old password" });
         } catch (err) {
-            res.status(500).send({ message: "server side error" });
+            res.status(500).send({
+                success: false,
+                message: "server side error",
+            });
         }
     }
 );
@@ -82,6 +94,7 @@ router.put("/activate", (req, res) => {
             async function (err, decodedtoken) {
                 if (err) {
                     return res.status(400).send({
+                        success: false,
                         message: "incorrect link to activate account",
                     });
                 }
@@ -91,23 +104,28 @@ router.put("/activate", (req, res) => {
                     .exec();
                 if (!userfound) {
                     return res.status(400).send({
+                        success: false,
                         message: "incorrect link to activate account",
                     });
                 }
                 if (userfound.active) {
-                    return res
-                        .status(400)
-                        .send({ message: "Already your account is activated" });
+                    return res.status(400).send({
+                        success: false,
+                        message: "Already your account is activated",
+                    });
                 }
                 await UserModel.findOneAndUpdate(
                     { email: user.email },
                     { active: true }
                 );
-                return res.status(200).send({ ...userfound._doc, token });
+                return res.status(200).send({
+                    success: true,
+                    message: "Account is activated Successfully",
+                });
             }
         );
     } catch (err) {
-        res.status(500).send({ message: "server side error" });
+        res.status(500).send({ success: false, message: "server side error" });
     }
 });
 
@@ -123,7 +141,10 @@ router.get(
             }).exec();
             res.send(users);
         } catch (err) {
-            res.status(500).send({ message: "server side error" });
+            res.status(500).send({
+                success: false,
+                message: "server side error",
+            });
         }
     }
 );
@@ -145,18 +166,26 @@ router.put(
                 { email: req.user.email },
                 updatePayload
             );
-            res.status(200).send({ message: "Updated Successfully" });
+            res.status(200).send({
+                success: true,
+                message: "Updated Successfully",
+            });
         } catch (err) {
-            res.status(500).send({ message: "server side error" });
+            res.status(500).send({
+                success: false,
+                message: "server side error",
+            });
         }
     }
 );
 
 router.post("/register", async (req, res, next) => {
     passport.authenticate("signup", async (err, user, info) => {
-        if (err) return res.status(500).send({ message: err });
-        if (!user || info) return res.status(300).send({ message: info });
+        if (err) return res.status(500).send({ success: false, message: err });
+        if (!user || info)
+            return res.status(300).send({ success: false, message: info });
         res.status(200).send({
+            success: true,
             message: "Please activate your account from your email",
         });
     })(req, res, next);
@@ -206,8 +235,9 @@ router.post("/login", async (req, res, next) => {
                     process.env.JWT_ACC_ACTIVATE
                 );
                 await pushRefreshToken(refreshToken);
-                res.cookie("token", token, { httpOnly: true }).json({
+                res.json({
                     ...body,
+                    accessToken: token,
                     token: refreshToken,
                 });
             });
@@ -227,7 +257,7 @@ router.post(
                 { password: 0 }
             );
             if (!user) {
-                res.status(404).send({
+                return res.status(404).send({
                     success: false,
                     message: "User not found for this",
                 });
@@ -254,8 +284,10 @@ router.post("/token", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_ACC_ACTIVATE, (err, user) => {
         if (err) return res.sendStatus(403);
         const token = generateAccessToken({ user: user.user });
-        res.cookie("token", token, { httpOnly: true }).send({
+        res.send({
+            success: true,
             message: "token refreshed!",
+            accessToken: token,
         });
     });
 });
@@ -268,7 +300,6 @@ function generateAccessToken(user) {
 
 router.delete("/logout", async (req, res) => {
     await removeRefreshToken(req.body.token);
-    res.clearCookie("token");
     res.sendStatus(204);
 });
 

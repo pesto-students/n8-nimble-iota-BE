@@ -7,40 +7,6 @@ const router = express.Router();
 const checkIsInRole = require("../utils");
 const { roles, sprintStatus } = require("../constants");
 
-// router.get(
-//     "/retrospectives",
-//     passport.authenticate("jwt", { session: false }),
-//     async (req, res) => {
-//         try {
-//             const sprint = await SprintsModel.findOne({
-//                 _id: req.body.sprint_id,
-//             }).exec();
-//             return res.send(sprint.retrospectives);
-//         } catch (error) {
-//             return res
-//                 .status(500)
-//                 .send({ message: "server side error", error: { ...error } });
-//         }
-//     }
-// );
-
-// router.get(
-//     "/activities",
-//     passport.authenticate("jwt", { session: false }),
-//     async (req, res) => {
-//         try {
-//             const sprint = await SprintsModel.findOne({
-//                 _id: req.body.sprint_id,
-//             }).exec();
-//             return res.send(sprint.activities);
-//         } catch (error) {
-//             return res
-//                 .status(500)
-//                 .send({ message: "server side error", error: { ...error } });
-//         }
-//     }
-// );
-
 router.post(
     "/activity",
     passport.authenticate("jwt", { session: false }),
@@ -56,11 +22,13 @@ router.post(
                 storypoints: req.body.storypoints,
             });
             sprint.save();
-            return res.send({ message: "activity updated" });
+            return res.send({ success: true, message: "activity updated" });
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -84,11 +52,16 @@ router.post(
                     },
                 }
             );
-            return res.send({ message: "retrospectives freezed" });
+            return res.send({
+                success: true,
+                message: "retrospectives freezed",
+            });
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -103,18 +76,24 @@ router.put(
             const sprint = await SprintsModel.findById(sprintId).exec();
             if (sprint.status !== sprintStatus.ACTIVE) {
                 return res.status(406).send({
+                    success: false,
                     message: "This sprint is not active",
                 });
             }
             sprint.status = sprintStatus.COMPLETED;
             sprint.enddate = Date.now();
             sprint.save();
-            return res.send({ message: "complete date updated" });
+            return res.send({
+                success: true,
+                message: "complete date updated",
+            });
         } catch (error) {
-            console.log(error)
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            console.log(error);
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -136,6 +115,7 @@ router.post(
             );
             if (active) {
                 return res.status(406).send({
+                    success: false,
                     message:
                         "All active sprints should be closed before starting a new one!",
                 });
@@ -143,6 +123,7 @@ router.post(
             const doc = project.sprints.find((e) => e.id === sprintId);
             if (!doc) {
                 return res.status(406).send({
+                    success: false,
                     message: "Sprint doesn't belong to the provided project!",
                 });
             }
@@ -169,15 +150,18 @@ router.post(
                 });
             } else {
                 res.status(406).send({
+                    success: false,
                     message: "No sprint in the current project!",
                 });
             }
             project.save();
             return res.send(sprints);
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
@@ -196,9 +180,11 @@ router.get(
             }).exec();
             return res.status(200).json(sprints);
         } catch (error) {
-            return res
-                .status(500)
-                .send({ message: "server side error", error: { ...error } });
+            return res.status(500).send({
+                success: false,
+                message: "server side error",
+                error: { ...error },
+            });
         }
     }
 );
