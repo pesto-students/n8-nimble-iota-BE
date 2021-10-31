@@ -2,7 +2,7 @@
 <p align="center"><b>Nimble Backend</b></p>
 <p align="center">Nimble : Quickly, Easily and lightly</p>
 
-<p align="center">Live Frontend url : <a href="https://nim-blenetlify.app">https://nim-blenetlify.app</a></p>
+<p align="center">Live Frontend url : <a href="https://nim-ble.netlify.app/">https://nim-ble.netlify.app/</a></p>
 
 <hr>
 
