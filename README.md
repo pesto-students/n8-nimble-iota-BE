@@ -8,10 +8,6 @@
 <hr>
 Nimble is an Agile Sprint management platform which provides functionality to manage all the three phases of a sprint- Pre,Active and Post. Pre sprint consists of effort estimation of various tickets using Poker board, Active Sprint consists of tracking tickets and Post sprint consists of retrospectives and reports.
 
-#### Frontend Repo
-
-https://github.com/pesto-students/n8-nimble-iota-FE
-
 ### Table of Contents  
 1. [Major Features](#major-features)
 2. [Get Started](#start)
