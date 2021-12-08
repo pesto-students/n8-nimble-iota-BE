@@ -3,20 +3,21 @@
 </p>
 <p align="center"><b>Nimble Backend</b></p>
 <p align="center">Nimble : Quickly, Easily and lightly</p>
-<p align="center">Live url : <a href="https://nim-ble.netlify.app">https://nim-ble.netlify.app</a></p>
 
 <hr>
 Nimble is an Agile Sprint management platform which provides functionality to manage all the three phases of a sprint- Pre,Active and Post. Pre sprint consists of effort estimation of various tickets using Poker board, Active Sprint consists of tracking tickets and Post sprint consists of retrospectives and reports.
 
 ### Table of Contents  
-1. [Major Features](#major-features)
-2. [Get Started](#start)
+1. [Demo](#demo)
+2. [Getting Started](#getting-started)
 3. [Technology Stack](#technology-stack)
 4. [Authors](#authors)
 5. [License](#license)
 
 
-### Major Features
+### Demo
+Live url : <a href="https://nim-ble.netlify.app">https://nim-ble.netlify.app</a>
+
 1. Scrum Poker for Ticket Estimation
 2. Scrum board for tracking tickets (with Drag Drop feature)
 3. Sprint Mangement
